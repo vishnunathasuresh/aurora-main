@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { sosService } from '../services/SOSService';
+import { sosService } from '@/services/SOSService';
 
 const { width } = Dimensions.get('window');
 
@@ -28,8 +28,8 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
   const [pulseAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
+    let interval: ReturnType<typeof setInterval> | undefined;
+
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(prev => prev - 1);
@@ -40,7 +40,7 @@ export const SOSButton: React.FC<SOSButtonProps> = ({
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval !== undefined) clearInterval(interval);
     };
   }, [isActive, timeLeft, onSOSCancelled]);
 

@@ -1,10 +1,10 @@
-import * as SMS from 'expo-sms';
-import * as Linking from 'expo-linking';
-import { Audio } from 'expo-av';
-import { databaseService, SOSAlert } from './DatabaseService';
-import { locationService, LocationData } from './LocationService';
-import { storageService, EmergencyContact, UserSettings } from './StorageService';
 import NetInfo from '@react-native-community/netinfo';
+import { AudioPlayer } from 'expo-audio'; // Correct import for expo-audio
+import * as Linking from 'expo-linking';
+import * as SMS from 'expo-sms';
+import { databaseService, SOSAlert } from './DatabaseService';
+import { LocationData, locationService } from './LocationService';
+import { EmergencyContact, storageService, UserSettings } from './StorageService';
 
 class SOSService {
   private isActive = false;
@@ -52,10 +52,8 @@ class SOSService {
       // Play buzzer if enabled in settings
       if (settings.playBuzzerOnSOS) {
         try {
-          const { sound } = await Audio.Sound.createAsync(
-            require('../assets/buzzer.mp3')
-          );
-          await sound.playAsync();
+          const player = new AudioPlayer(require('../assets/buzzer.mp3'), 100);
+          await player.play();
           console.log('Playing buzzer for SOS');
         } catch (error) {
           console.error('Failed to play buzzer sound:', error);
@@ -144,7 +142,7 @@ class SOSService {
 
   private async sendSOSAlert(alert: SOSAlert, alertId: number): Promise<void> {
     try {
-      // Example: Send to backend API (replace with your actual endpoint)
+      // TODO: Replace with a a backend API endpoint
       const response = await fetch('https://your-backend-api.com/sos', {
         method: 'POST',
         headers: {

@@ -13,6 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { databaseService } from '@/services/DatabaseService';
 import { sosService } from '@/services/SOSService';
+import { locationService } from '@/services/LocationService';
+import { storageService } from '@/services/StorageService';
+import * as SMS from 'expo-sms';
+import * as Linking from 'expo-linking';
+import * as Haptics from 'expo-haptics';
 
 export default function HomeScreen() {
   const [isSOSActive, setIsSOSActive] = useState(false);
@@ -77,9 +82,127 @@ export default function HomeScreen() {
   };
 
   // Quick Actions
-  const handleShareLocation = () => Alert.alert('Share Location', 'Location shared!');
-  const handleEmergencyCall = () => Alert.alert('Emergency Call', 'Calling 112...');
-  const handleSilentAlarm = () => Alert.alert('Silent Alarm', 'Silent alarm triggered!');
+  const handleShareLocation = async () => {
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      // Get current location
+      const location = await locationService.getCurrentLocation();
+      if (!location) {
+        Alert.alert('Error', 'Unable to get your current location. Please check location permissions.');
+        return;
+      }
+
+      // Get emergency contacts
+      const contacts = await storageService.getEmergencyContacts();
+      if (contacts.length === 0) {
+        Alert.alert('No Contacts', 'Please add emergency contacts in the Contacts tab first.');
+        return;
+      }
+
+      // Check SMS availability
+      const smsAvailable = await SMS.isAvailableAsync();
+      if (!smsAvailable) {
+        Alert.alert('SMS Not Available', 'SMS is not available on this device.');
+        return;
+      }
+
+      // Create location message
+      const locationMessage = `📍 My Current Location: https://maps.google.com/?q=${location.latitude},${location.longitude}\n\nSent from Aurora Safety App at ${new Date().toLocaleString()}`;
+
+      // Send to all emergency contacts
+      const phoneNumbers = contacts.map(contact => contact.phone);
+      await SMS.sendSMSAsync(phoneNumbers, locationMessage);
+
+      Alert.alert('Location Shared', `Your location has been shared with ${contacts.length} emergency contact(s).`);
+    } catch (error) {
+      console.error('Share location error:', error);
+      Alert.alert('Error', 'Failed to share location. Please try again.');
+    }
+  };
+
+  const handleEmergencyCall = () => {
+    Alert.alert(
+      'Emergency Call',
+      'Choose emergency service to call:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Police (112)',
+          onPress: async () => {
+            try {
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              await Linking.openURL('tel:112');
+            } catch (error) {
+              Alert.alert('Error', 'Unable to make call. Please dial 112 manually.');
+            }
+          }
+        },
+        {
+          text: 'Ambulance (108)',
+          onPress: async () => {
+            try {
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              await Linking.openURL('tel:108');
+            } catch (error) {
+              Alert.alert('Error', 'Unable to make call. Please dial 108 manually.');
+            }
+          }
+        },
+        {
+          text: 'Fire (101)',
+          onPress: async () => {
+            try {
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              await Linking.openURL('tel:101');
+            } catch (error) {
+              Alert.alert('Error', 'Unable to make call. Please dial 101 manually.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleSilentAlarm = async () => {
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+      // Get current location
+      const location = await locationService.getCurrentLocation();
+      if (!location) {
+        Alert.alert('Error', 'Unable to get your current location for silent alarm.');
+        return;
+      }
+
+      // Get emergency contacts
+      const contacts = await storageService.getEmergencyContacts();
+      if (contacts.length === 0) {
+        Alert.alert('No Contacts', 'Please add emergency contacts in the Contacts tab first.');
+        return;
+      }
+
+      // Check SMS availability
+      const smsAvailable = await SMS.isAvailableAsync();
+      if (!smsAvailable) {
+        Alert.alert('SMS Not Available', 'SMS is not available on this device.');
+        return;
+      }
+
+      // Create silent alarm message
+      const silentMessage = `🚨 SILENT ALARM ACTIVATED 🚨\n\nI may be in danger and need help. Please check on me immediately.\n\nLocation: https://maps.google.com/?q=${location.latitude},${location.longitude}\n\nTime: ${new Date().toLocaleString()}\n\nSent from Aurora Safety App`;
+
+      // Send to all emergency contacts silently
+      const phoneNumbers = contacts.map(contact => contact.phone);
+      await SMS.sendSMSAsync(phoneNumbers, silentMessage);
+
+      // Show subtle confirmation (no loud alert)
+      Alert.alert('Silent Alarm Sent', 'Emergency contacts have been notified discreetly.');
+    } catch (error) {
+      console.error('Silent alarm error:', error);
+      Alert.alert('Error', 'Failed to send silent alarm. Please try again.');
+    }
+  };
 
   // UI
   return (
