@@ -1,50 +1,80 @@
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Aurora Safety App
 
-## Get started
+Aurora is a modern safety companion app built with Expo and React Native. It empowers users to quickly alert emergency contacts, share their live location, and find nearby safe spaces such as police stations and hospitals.
 
-1. Install dependencies
+## Features
 
+- **SOS Button:** Instantly trigger an SOS alert to notify your emergency contacts with your live location.
+- **Emergency Contacts:** Add, edit, and manage a list of trusted contacts to be notified in emergencies.
+- **Safe Spaces Map:** Discover nearby police stations, hospitals, and other safe locations using real-time geolocation.
+- **Quick Location Sharing:** Share your current location with all emergency contacts via SMS.
+- **Customizable Settings:** Adjust SOS timer, enable/disable buzzer, and personalize your safety preferences.
+- **Modern UI:** Clean, accessible, and responsive design for a seamless user experience.
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- Android/iOS device or emulator
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/vishnunathasuresh/aurora-main.git
+   cd aurora-main
+   ```
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. **Start the development server:**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run on your device:**
+   - Scan the QR code with [Expo Go](https://expo.dev/go) or use an emulator.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Scripts
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `npm start` — Start the Expo development server
+- `npm run android` — Run on Android emulator/device
+- `npm run ios` — Run on iOS simulator/device
+- `npm run web` — Run in the browser
+- `npm run reset-project` — Reset to a fresh project state
 
-## Get a fresh project
+## Project Structure
 
-When you're ready, run:
+- `app/` — Main app screens and navigation (file-based routing)
+- `components/` — Reusable UI components (SOS button, contacts, map, etc.)
+- `services/` — Business logic (SOS, location, safe spots, storage)
+- `assets/` — Fonts, images, and audio
+- `constants/` — App-wide constants and colors
+- `hooks/` — Custom React hooks
 
-```bash
-npm run reset-project
-```
+## Technologies Used
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- React Native & Expo
+- Expo Router (file-based navigation)
+- Expo Location, SMS, Audio, Haptics
+- React Native Maps
+- TypeScript
 
-## Learn more
+## Contributing
 
-To learn more about developing your project with Expo, look at the following resources:
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## License
 
-## Join the community
+[MIT](LICENSE)
 
-Join our community of developers creating universal apps.
+## Community
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo on GitHub](https://github.com/expo/expo)
+- [Discord community](https://chat.expo.dev)

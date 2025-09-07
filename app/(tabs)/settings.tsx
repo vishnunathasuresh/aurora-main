@@ -165,22 +165,6 @@ const SettingsScreen: React.FC = () => {
             />
           </View>
         </View>
-
-        {/* App Info Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <View style={styles.settingCard}>
-            <View style={styles.settingHeader}>
-              <View style={styles.settingIconContainer}>
-                <Ionicons name="flower" size={24} color="#7c3aed" />
-              </View>
-              <View style={styles.settingContent}>
-                <Text style={styles.settingLabel}>Aurora Safety App</Text>
-                <Text style={styles.settingDescription}>Version 1.0.0</Text>
-              </View>
-            </View>
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
