@@ -49,6 +49,12 @@ class SOSService {
       await this.loadEmergencyContacts(); // Always use latest contacts
       const settings = await this.loadUserSettings();
 
+      // Check if we have emergency contacts
+      if (this.emergencyContacts.length === 0) {
+        console.error('No emergency contacts available');
+        return false;
+      }
+
       // Play buzzer if enabled in settings
       if (settings.playBuzzerOnSOS) {
         try {
@@ -74,25 +80,53 @@ class SOSService {
       const alertId = await databaseService.saveSOSAlert(sosAlert);
       console.log('SOS alert saved locally with ID:', alertId);
 
-      // Try to send immediately if online
-      const isOnline = await this.checkNetworkStatus();
-      if (isOnline) {
-        await this.sendSOSAlert(sosAlert, alertId);
+      // Check if timer is enabled and greater than 0
+      if (settings.timerEnabled && (settings.timerSeconds ?? 30) > 0) {
+        // Start cancel timer if enabled in settings and timer > 0
+        this.startCancelTimer(settings.timerSeconds ?? 30, sosAlert, alertId);
+        this.isActive = true;
       } else {
-        // Fallback to SMS if available
-        await this.sendSMSEmergency(location);
+        // Timer is disabled or set to 0 - proceed immediately
+        console.log('Timer disabled or set to 0 - sending SOS immediately');
+        await this.executeSOS(sosAlert, alertId);
+        this.isActive = false; // Don't keep SOS active since it's sent immediately
       }
-
-      // Start cancel timer if enabled in settings
-      if (settings.timerEnabled) {
-        this.startCancelTimer(settings.timerSeconds ?? 30);
-      }
-      this.isActive = true;
 
       return true;
     } catch (error) {
       console.error('Failed to trigger SOS:', error);
       return false;
+    }
+  }
+
+  // New method to execute SOS (separated for reuse)
+  private async executeSOS(sosAlert: SOSAlert, alertId: number): Promise<void> {
+    try {
+      // Check network status
+      const isOnline = await this.checkNetworkStatus();
+
+      if (isOnline) {
+        console.log('Online - attempting to send SOS alert to server');
+        await this.sendSOSAlert(sosAlert, alertId);
+      } else {
+        console.log('Offline - sending emergency SMS directly');
+        // When offline, always send SMS to emergency contacts
+        await this.sendSMSEmergency({
+          latitude: sosAlert.latitude,
+          longitude: sosAlert.longitude,
+          timestamp: sosAlert.timestamp,
+        });
+        // Update status to sent since SMS was successful
+        await databaseService.updateAlertStatus(alertId, 'sent');
+      }
+    } catch (error) {
+      console.error('Failed to execute SOS:', error);
+      // Fallback to SMS even if other methods fail
+      await this.sendSMSEmergency({
+        latitude: sosAlert.latitude,
+        longitude: sosAlert.longitude,
+        timestamp: sosAlert.timestamp,
+      });
     }
   }
 
@@ -116,11 +150,15 @@ class SOSService {
     }
   }
 
-  private startCancelTimer(seconds: number): void {
+  private startCancelTimer(seconds: number, sosAlert: SOSAlert, alertId: number): void {
     this.cancelTimer = setTimeout(async () => {
-      console.log('SOS cancel timer expired');
+      console.log('SOS cancel timer expired - executing SOS');
       this.isActive = false;
-      // Auto-dial police helpline 112
+
+      // Execute the SOS alert
+      await this.executeSOS(sosAlert, alertId);
+
+      // Also auto-dial police helpline 112 as backup
       try {
         await Linking.openURL('tel:112');
         console.log('Auto-dialed 112 after SOS timer expired');

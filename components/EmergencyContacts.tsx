@@ -8,8 +8,10 @@ import {
   Alert,
   TextInput,
   Modal,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { sosService } from '@/services/SOSService';
 import { EmergencyContact } from '@/services/StorageService';
 
@@ -68,7 +70,17 @@ const EmergencyContacts = () => {
       `Call ${contact.name}?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Call', onPress: () => console.log(`Calling ${contact.phone}`) },
+        {
+          text: 'Call',
+          onPress: async () => {
+            try {
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              await Linking.openURL(`tel:${contact.phone}`);
+            } catch (error) {
+              Alert.alert('Error', `Unable to call ${contact.name}. Please dial ${contact.phone} manually.`);
+            }
+          }
+        },
       ]
     );
   };
